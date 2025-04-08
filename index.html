@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Rejestracja czasu pracy</title>
   <style>
     body {
@@ -69,18 +68,18 @@
   <div class="container">
     <div id="login-section">
       <label for="password">Wprowadź hasło:</label>
-      <input type="password" id="password" placeholder="Hasło">
+      <input type="password" id="password" placeholder="Hasło" />
       <button onclick="checkPassword()">Zatwierdź</button>
     </div>
 
     <div id="form-section" style="display:none;">
       <h3 id="user-name"></h3>
       <label>Data rozpoczęcia:</label>
-      <input type="date" id="start-date">
+      <input type="date" id="start-date" />
       <select id="start-time"></select>
 
       <label>Data zakończenia:</label>
-      <input type="date" id="end-date">
+      <input type="date" id="end-date" />
       <select id="end-time"></select>
 
       <div><strong>Czas trwania: <span id="duration">0</span> godzin</strong></div>
@@ -91,33 +90,16 @@
     </div>
   </div>
 
-  
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
+  <script>
     const passwordMap = {
       "xx": "Jan Kowalski",
       "yy": "Anna Nowak",
       "zz": "Piotr Zieliński"
     };
 
-    const startTime = document.getElementById("start-time");
-    const endTime = document.getElementById("end-time");
-    const today = new Date().toISOString().split("T")[0];
-
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const time = \`\${String(h).padStart(2, '0')}:\${String(m).padStart(2, '0')}\`;
-        startTime.add(new Option(time, time));
-        endTime.add(new Option(time, time));
-      }
-    }
-
-    document.getElementById("start-date").value = today;
-    document.getElementById("end-date").value = today;
-
     let currentUser = null;
 
-    window.checkPassword = function () {
+    function checkPassword() {
       const pass = document.getElementById("password").value;
       if (passwordMap[pass]) {
         currentUser = passwordMap[pass];
@@ -131,7 +113,24 @@
       }
     }
 
-    window.saveEntry = function () {
+    function calculateDuration(startDate, startTime, endDate, endTime) {
+      const start = new Date(`${startDate}T${startTime}:00`);
+      const end = new Date(`${endDate}T${endTime}:00`);
+      const diffMs = end - start;
+      return (diffMs / 3600000).toFixed(2);
+    }
+
+    function updateDuration() {
+      const sd = document.getElementById("start-date").value;
+      const ed = document.getElementById("end-date").value;
+      const st = document.getElementById("start-time").value;
+      const et = document.getElementById("end-time").value;
+      if (!sd || !ed || !st || !et) return;
+      const duration = calculateDuration(sd, st, ed, et);
+      document.getElementById("duration").innerText = duration;
+    }
+
+    function saveEntry() {
       const hours = parseFloat(document.getElementById("duration").innerText);
       if (hours <= 0 || isNaN(hours)) {
         alert("Czas trwania musi być większy niż 0 godzin.");
@@ -153,28 +152,6 @@
       renderRecentEntries();
     }
 
-    function calculateDuration(startDate, startTime, endDate, endTime) {
-      const start = new Date(\`\${startDate}T\${startTime}:00\`);
-      const end = new Date(\`\${endDate}T\${endTime}:00\`);
-      const diffMs = end - start;
-      return (diffMs / 3600000).toFixed(2);
-    }
-
-    window.updateDuration = function () {
-      const sd = document.getElementById("start-date").value;
-      const ed = document.getElementById("end-date").value;
-      const st = document.getElementById("start-time").value;
-      const et = document.getElementById("end-time").value;
-      if (!sd || !ed || !st || !et) return;
-      const duration = calculateDuration(sd, st, ed, et);
-      document.getElementById("duration").innerText = duration;
-    }
-
-    startTime.addEventListener("change", updateDuration);
-    endTime.addEventListener("change", updateDuration);
-    document.getElementById("start-date").addEventListener("change", updateDuration);
-    document.getElementById("end-date").addEventListener("change", updateDuration);
-
     function renderRecentEntries() {
       const container = document.getElementById("recent-entries");
       container.innerHTML = "<h4>Ostatnie wpisy:</h4>";
@@ -187,12 +164,12 @@
         const div = document.createElement("div");
         div.className = "entry";
         const dur = calculateDuration(e.startDate, e.startTime, e.endDate, e.endTime);
-        div.textContent = \`Od: \${e.startDate} \${e.startTime} — Do: \${e.endDate} \${e.endTime} (\${dur}h)\`;
+        div.textContent = `Od: ${e.startDate} ${e.startTime} — Do: ${e.endDate} ${e.endTime} (${dur}h)`;
         container.appendChild(div);
       }
     }
 
-    window.undoLast = function () {
+    function undoLast() {
       if (!confirm("Czy na pewno chcesz cofnąć ostatni wpis?")) return;
       let entries = JSON.parse(localStorage.getItem("entries") || "[]");
       for (let i = entries.length - 1; i >= 0; i--) {
@@ -204,8 +181,30 @@
       localStorage.setItem("entries", JSON.stringify(entries));
       renderRecentEntries();
     }
-  });
-</script>
 
+    function init() {
+      const startTime = document.getElementById("start-time");
+      const endTime = document.getElementById("end-time");
+      const today = new Date().toISOString().split("T")[0];
+
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+          startTime.add(new Option(time, time));
+          endTime.add(new Option(time, time));
+        }
+      }
+
+      document.getElementById("start-date").value = today;
+      document.getElementById("end-date").value = today;
+
+      startTime.addEventListener("change", updateDuration);
+      endTime.addEventListener("change", updateDuration);
+      document.getElementById("start-date").addEventListener("change", updateDuration);
+      document.getElementById("end-date").addEventListener("change", updateDuration);
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
 </body>
 </html>
