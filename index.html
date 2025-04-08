@@ -104,7 +104,7 @@
 
     for (let h = 0; h < 24; h++) {
       for (let m = 0; m < 60; m += 30) {
-        const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        const time = \`\${String(h).padStart(2, '0')}:\${String(m).padStart(2, '0')}\`;
         startTime.add(new Option(time, time));
         endTime.add(new Option(time, time));
       }
@@ -130,6 +130,12 @@
     }
 
     function saveEntry() {
+      const hours = parseFloat(document.getElementById("duration").innerText);
+      if (hours <= 0 || isNaN(hours)) {
+        alert("Czas trwania musi być większy niż 0 godzin.");
+        return;
+      }
+
       const entry = {
         user: currentUser,
         startDate: document.getElementById("start-date").value,
@@ -145,24 +151,27 @@
       renderRecentEntries();
     }
 
-    function calculateDuration(start, end) {
-      const [sh, sm] = start.split(":").map(Number);
-      const [eh, em] = end.split(":").map(Number);
-      let startMin = sh * 60 + sm;
-      let endMin = eh * 60 + em;
-      if (endMin < startMin) endMin += 24 * 60;
-      return ((endMin - startMin) / 60).toFixed(2);
+    function calculateDuration(startDate, startTime, endDate, endTime) {
+      const start = new Date(\`\${startDate}T\${startTime}:00\`);
+      const end = new Date(\`\${endDate}T\${endTime}:00\`);
+      const diffMs = end - start;
+      return (diffMs / 3600000).toFixed(2);
     }
 
     function updateDuration() {
-      const start = document.getElementById("start-time").value;
-      const end = document.getElementById("end-time").value;
-      if (!start || !end) return;
-      document.getElementById("duration").innerText = calculateDuration(start, end);
+      const sd = document.getElementById("start-date").value;
+      const ed = document.getElementById("end-date").value;
+      const st = document.getElementById("start-time").value;
+      const et = document.getElementById("end-time").value;
+      if (!sd || !ed || !st || !et) return;
+      const duration = calculateDuration(sd, st, ed, et);
+      document.getElementById("duration").innerText = duration;
     }
 
     startTime.addEventListener("change", updateDuration);
     endTime.addEventListener("change", updateDuration);
+    document.getElementById("start-date").addEventListener("change", updateDuration);
+    document.getElementById("end-date").addEventListener("change", updateDuration);
 
     function renderRecentEntries() {
       const container = document.getElementById("recent-entries");
@@ -175,7 +184,8 @@
       for (const e of entries) {
         const div = document.createElement("div");
         div.className = "entry";
-        div.textContent = `Od: ${e.startDate} ${e.startTime} — Do: ${e.endDate} ${e.endTime} (${calculateDuration(e.startTime, e.endTime)}h)`;
+        const dur = calculateDuration(e.startDate, e.startTime, e.endDate, e.endTime);
+        div.textContent = \`Od: \${e.startDate} \${e.startTime} — Do: \${e.endDate} \${e.endTime} (\${dur}h)\`;
         container.appendChild(div);
       }
     }
