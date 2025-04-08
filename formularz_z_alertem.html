@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Rejestracja czasu pracy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .background-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 100px;
+      color: rgba(0, 0, 0, 0.1);
+      filter: blur(8px);
+      z-index: 0;
+      white-space: nowrap;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      margin-top: 50px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    input, select, button {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    .entries {
+      margin-top: 20px;
+      background: #fafafa;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .entry {
+      border-bottom: 1px solid #ccc;
+      padding: 5px 0;
+    }
+
+    .entry:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-text">PROMEDION</div>
+  <div class="container">
+    <div id="login-section">
+      <label for="password">Wprowadź hasło:</label>
+      <input type="password" id="password" placeholder="Hasło">
+      <button onclick="checkPassword()">Zatwierdź</button>
+    </div>
+
+    <div id="form-section" style="display:none;">
+      <h3 id="user-name"></h3>
+      <label>Data rozpoczęcia:</label>
+      <input type="date" id="start-date">
+      <select id="start-time"></select>
+
+      <label>Data zakończenia:</label>
+      <input type="date" id="end-date">
+      <select id="end-time"></select>
+
+      <button onclick="saveEntry()">Zapisz</button>
+      <button onclick="undoLast()">Cofnij ostatni wpis</button>
+
+      <div class="entries" id="recent-entries"></div>
+    </div>
+  </div>
+
+  <script>
+    const passwordMap = {
+      "xx": "Jan Kowalski",
+      "yy": "Anna Nowak",
+      "zz": "Piotr Zieliński"
+    };
+
+    const startTime = document.getElementById("start-time");
+    const endTime = document.getElementById("end-time");
+    const today = new Date().toISOString().split("T")[0];
+
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const time = \`\${String(h).padStart(2, '0')}:\${String(m).padStart(2, '0')}\`;
+        let opt1 = new Option(time, time);
+        let opt2 = new Option(time, time);
+        startTime.add(opt1);
+        endTime.add(opt2);
+      }
+    }
+
+    document.getElementById("start-date").value = today;
+    document.getElementById("end-date").value = today;
+
+    let currentUser = null;
+
+    function checkPassword() {
+      alert("Klik działa!");
+      const pass = document.getElementById("password").value;
+      if (passwordMap[pass]) {
+        currentUser = passwordMap[pass];
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("form-section").style.display = "block";
+        document.getElementById("user-name").innerText = currentUser;
+        renderRecentEntries();
+      } else {
+        alert("Nieprawidłowe hasło.");
+      }
+    }
+
+    function saveEntry() {
+      const entry = {
+        user: currentUser,
+        startDate: document.getElementById("start-date").value,
+        startTime: document.getElementById("start-time").value,
+        endDate: document.getElementById("end-date").value,
+        endTime: document.getElementById("end-time").value,
+        timestamp: new Date().toISOString()
+      };
+
+      let entries = JSON.parse(localStorage.getItem("entries") || "[]");
+      entries.push(entry);
+      localStorage.setItem("entries", JSON.stringify(entries));
+      renderRecentEntries();
+    }
+
+    function renderRecentEntries() {
+      const container = document.getElementById("recent-entries");
+      container.innerHTML = "<h4>Ostatnie wpisy:</h4>";
+      const entries = JSON.parse(localStorage.getItem("entries") || "[]")
+        .filter(e => e.user === currentUser)
+        .slice(-5)
+        .reverse();
+
+      for (const e of entries) {
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.textContent = \`Od: \${e.startDate} \${e.startTime} — Do: \${e.endDate} \${e.endTime}\`;
+        container.appendChild(div);
+      }
+    }
+
+    function undoLast() {
+      let entries = JSON.parse(localStorage.getItem("entries") || "[]");
+      for (let i = entries.length - 1; i >= 0; i--) {
+        if (entries[i].user === currentUser) {
+          entries.splice(i, 1);
+          break;
+        }
+      }
+      localStorage.setItem("entries", JSON.stringify(entries));
+      renderRecentEntries();
+    }
+  </script>
+</body>
+</html>
