@@ -103,11 +103,9 @@
 
     for (let h = 0; h < 24; h++) {
       for (let m = 0; m < 60; m += 30) {
-        const time = \`\${String(h).padStart(2, '0')}:\${String(m).padStart(2, '0')}\`;
-        let opt1 = new Option(time, time);
-        let opt2 = new Option(time, time);
-        startTime.add(opt1);
-        endTime.add(opt2);
+        const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        startTime.add(new Option(time, time));
+        endTime.add(new Option(time, time));
       }
     }
 
@@ -117,7 +115,6 @@
     let currentUser = null;
 
     function checkPassword() {
-      alert("Klik działa!");
       const pass = document.getElementById("password").value;
       if (passwordMap[pass]) {
         currentUser = passwordMap[pass];
@@ -157,7 +154,7 @@
       for (const e of entries) {
         const div = document.createElement("div");
         div.className = "entry";
-        div.textContent = \`Od: \${e.startDate} \${e.startTime} — Do: \${e.endDate} \${e.endTime}\`;
+        div.textContent = `Od: ${e.startDate} ${e.startTime} — Do: ${e.endDate} ${e.endTime}`;
         container.appendChild(div);
       }
     }
