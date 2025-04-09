@@ -113,6 +113,7 @@
     document.getElementById("end-date").value = today;
 
     let currentUser = null;
+    let durationUpdateEnabled = false;
 
     function checkPassword() {
       const pass = document.getElementById("password").value;
@@ -122,7 +123,9 @@
         document.getElementById("form-section").style.display = "block";
         document.getElementById("user-name").innerText = currentUser;
         renderRecentEntries();
-        updateDuration();
+        setTimeout(() => {
+          durationUpdateEnabled = true;
+        }, 200); // włącz opóźnienie, by uniknąć walidacji przy starcie
       } else {
         alert("Nieprawidłowe hasło.");
       }
@@ -144,10 +147,10 @@
       if (!sd || !ed || !st || !et) return;
 
       const hours = calculateDuration(sd, st, ed, et);
-      if (hours === null) {
+      if (hours === null && durationUpdateEnabled) {
         alert("Czas zakończenia musi być późniejszy niż czas rozpoczęcia.");
         document.getElementById("duration").innerText = "0";
-      } else {
+      } else if (hours !== null) {
         document.getElementById("duration").innerText = hours;
       }
     }
