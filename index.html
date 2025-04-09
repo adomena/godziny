@@ -14,16 +14,17 @@
       overflow: hidden;
     }
 
-    .background-text {
+    .background-logo {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 100px;
-      color: rgba(0, 0, 0, 0.1);
-      filter: blur(8px);
+      width: 60%;
+      max-width: 400px;
+      opacity: 0.08;
+      filter: blur(6px);
       z-index: 0;
-      white-space: nowrap;
+      pointer-events: none;
     }
 
     .container {
@@ -64,7 +65,9 @@
   </style>
 </head>
 <body>
-  <div class="background-text">PROMEDION</div>
+  <!-- Logo w tle -->
+  <img src="Promedion-logo-color.svg" alt="PROMEDION" class="background-logo" />
+
   <div class="container">
     <div id="login-section">
       <label for="password">Wprowadź hasło:</label>
@@ -125,7 +128,7 @@
         renderRecentEntries();
         setTimeout(() => {
           durationUpdateEnabled = true;
-        }, 200); // włącz opóźnienie, by uniknąć walidacji przy starcie
+        }, 200);
       } else {
         alert("Nieprawidłowe hasło.");
       }
