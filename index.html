@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -129,7 +128,37 @@
       }
     }
 
+    function calculateDuration(startDate, startTime, endDate, endTime) {
+      const start = new Date(`${startDate}T${startTime}:00`);
+      const end = new Date(`${endDate}T${endTime}:00`);
+      const diffMs = end - start;
+      const hours = diffMs / 3600000;
+      return hours > 0 ? hours.toFixed(2) : null;
+    }
+
+    function updateDuration() {
+      const sd = document.getElementById("start-date").value;
+      const ed = document.getElementById("end-date").value;
+      const st = document.getElementById("start-time").value;
+      const et = document.getElementById("end-time").value;
+      if (!sd || !ed || !st || !et) return;
+
+      const hours = calculateDuration(sd, st, ed, et);
+      if (hours === null) {
+        alert("Czas zakończenia musi być późniejszy niż czas rozpoczęcia.");
+        document.getElementById("duration").innerText = "0";
+      } else {
+        document.getElementById("duration").innerText = hours;
+      }
+    }
+
     function saveEntry() {
+      const hours = parseFloat(document.getElementById("duration").innerText);
+      if (isNaN(hours) || hours <= 0) {
+        alert("Nie można zapisać ujemnego lub zerowego czasu.");
+        return;
+      }
+
       const entry = {
         user: currentUser,
         startDate: document.getElementById("start-date").value,
@@ -145,25 +174,6 @@
       renderRecentEntries();
     }
 
-    function calculateDuration(start, end) {
-      const [sh, sm] = start.split(":").map(Number);
-      const [eh, em] = end.split(":").map(Number);
-      let startMin = sh * 60 + sm;
-      let endMin = eh * 60 + em;
-      if (endMin < startMin) endMin += 24 * 60;
-      return ((endMin - startMin) / 60).toFixed(2);
-    }
-
-    function updateDuration() {
-      const start = document.getElementById("start-time").value;
-      const end = document.getElementById("end-time").value;
-      if (!start || !end) return;
-      document.getElementById("duration").innerText = calculateDuration(start, end);
-    }
-
-    startTime.addEventListener("change", updateDuration);
-    endTime.addEventListener("change", updateDuration);
-
     function renderRecentEntries() {
       const container = document.getElementById("recent-entries");
       container.innerHTML = "<h4>Ostatnie wpisy:</h4>";
@@ -175,7 +185,8 @@
       for (const e of entries) {
         const div = document.createElement("div");
         div.className = "entry";
-        div.textContent = `Od: ${e.startDate} ${e.startTime} — Do: ${e.endDate} ${e.endTime} (${calculateDuration(e.startTime, e.endTime)}h)`;
+        const dur = calculateDuration(e.startDate, e.startTime, e.endDate, e.endTime);
+        div.textContent = `Od: ${e.startDate} ${e.startTime} — Do: ${e.endDate} ${e.endTime} (${dur}h)`;
         container.appendChild(div);
       }
     }
@@ -192,6 +203,11 @@
       localStorage.setItem("entries", JSON.stringify(entries));
       renderRecentEntries();
     }
+
+    startTime.addEventListener("change", updateDuration);
+    endTime.addEventListener("change", updateDuration);
+    document.getElementById("start-date").addEventListener("change", updateDuration);
+    document.getElementById("end-date").addEventListener("change", updateDuration);
   </script>
 </body>
 </html>
